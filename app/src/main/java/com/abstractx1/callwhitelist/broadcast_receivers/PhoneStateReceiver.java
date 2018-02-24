@@ -13,7 +13,7 @@ import android.telephony.TelephonyManager;
 
 import com.abstractx1.callwhitelist.ContactUtils;
 import com.abstractx1.callwhitelist.Global;
-import com.abstractx1.callwhitelist.MainActivity;
+import com.abstractx1.callwhitelist.activities.MainActivity;
 import com.abstractx1.callwhitelist.R;
 import com.android.internal.telephony.ITelephony;
 
@@ -34,36 +34,38 @@ public class PhoneStateReceiver extends BroadcastReceiver {
         if (intentAction.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
             Bundle bundle = intent.getExtras();
 
-            if(bundle != null) {
+            if (bundle != null) {
                 try {
-                    // Java reflection to gain access to TelephonyManager's
-                    // ITelephony getter
-                    TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                    Class telephonyManagerClass = Class.forName(telephonyManager.getClass().getName());
-                    Method getITelephonyMethod = telephonyManagerClass.getDeclaredMethod("getITelephony");
-                    getITelephonyMethod.setAccessible(true);
-                    ITelephony telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
-                    Bundle _bundle = intent.getExtras();
-                    String incomingNumber = _bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                    MainActivity.log(String.format("Incoming number: %s", incomingNumber));
 
-                    List<String> phoneNumbers = ContactUtils.getPhoneNumbers(context);
+                    if (Global.hasPermissionBlockPhoneCall(context)) {
+                        // Permission is granted
 
-                    if (!phoneNumbers.contains(incomingNumber)) {
-                        if (Global.canBlockPhoneCall(context)) {
-                            // Permission is granted
-                            telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
-                            telephonyService.silenceRinger();
-                            telephonyService.endCall();
-                            MainActivity.log(String.format("endCall for incoming number: '%s'", incomingNumber));
-                            sendNotification(context, incomingNumber);
+                        // Java reflection to gain access to TelephonyManager's
+                        // ITelephony getter
+                        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+                        Class telephonyManagerClass = Class.forName(telephonyManager.getClass().getName());
+                        Method getITelephonyMethod = telephonyManagerClass.getDeclaredMethod("getITelephony");
+                        getITelephonyMethod.setAccessible(true);
+                        ITelephony telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
+                        Bundle _bundle = intent.getExtras();
+                        String incomingNumber = _bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                        MainActivity.log(String.format("Incoming number: %s", incomingNumber));
+
+                        List<String> phoneNumbers = ContactUtils.getPhoneNumbers(context);
+
+                        if (!phoneNumbers.contains(incomingNumber)) {
+                            if (Global.getEnableWhitelistToggle(context)) {
+                                telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
+                                telephonyService.silenceRinger();
+                                telephonyService.endCall();
+                                MainActivity.log(String.format("endCall for incoming number: '%s'", incomingNumber));
+                                sendNotification(context, incomingNumber);
+                            }
+                        } else {
+                            MainActivity.log(String.format("whitelisted contact for incoming number: '%s'", incomingNumber));
                         }
-                        else {
-                            MainActivity.log(String.format("require permission com.abstractx1.callwhitelist.permission.BLOCK_PHONE_CALLS to block call"));
-                        }
-                    }
-                    else {
-                        MainActivity.log(String.format("whitelisted contact for incoming number: '%s'", incomingNumber));
+                    } else {
+                        MainActivity.log(String.format("require permission com.abstractx1.callwhitelist.permission.BLOCK_PHONE_CALLS to block call"));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -72,6 +74,8 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                 }
             }
         }
+
+
     }
 
     private void sendNotification(Context context, String blockedPhoneNumber) {
