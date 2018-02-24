@@ -5,15 +5,13 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 
 import com.abstractx1.callwhitelist.ContactUtils;
+import com.abstractx1.callwhitelist.Global;
 import com.abstractx1.callwhitelist.MainActivity;
-import com.abstractx1.callwhitelist.Manifest;
 import com.android.internal.telephony.ITelephony;
 
 import java.lang.reflect.Method;
@@ -49,7 +47,7 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                     List<String> phoneNumbers = ContactUtils.getPhoneNumbers(context);
 
                     if (!phoneNumbers.contains(incomingNumber)) {
-                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLOCK_PHONE_CALLS) == PackageManager.PERMISSION_GRANTED) {
+                        if (Global.canBlockPhoneCall(context)) {
                             // Permission is granted
                             telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
                             telephonyService.silenceRinger();
