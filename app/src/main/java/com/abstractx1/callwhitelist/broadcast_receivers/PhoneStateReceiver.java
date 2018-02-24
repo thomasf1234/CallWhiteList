@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
@@ -12,6 +14,7 @@ import android.telephony.TelephonyManager;
 import com.abstractx1.callwhitelist.ContactUtils;
 import com.abstractx1.callwhitelist.Global;
 import com.abstractx1.callwhitelist.MainActivity;
+import com.abstractx1.callwhitelist.R;
 import com.android.internal.telephony.ITelephony;
 
 import java.lang.reflect.Method;
@@ -72,12 +75,14 @@ public class PhoneStateReceiver extends BroadcastReceiver {
     }
 
     private void sendNotification(Context context, String blockedPhoneNumber) {
+        Resources resources = context.getResources();
         Date now = new Date();
         String nowString = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(now);
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, "CHANNEL_ID")
                         .setSmallIcon(android.R.drawable.ic_menu_call)
+                        .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher_round))
                         .setContentTitle("CallWhiteList")
                         .setContentText(String.format("Blocked call %s at %s", blockedPhoneNumber, nowString))
                         .setDefaults(Notification.DEFAULT_ALL)
