@@ -12,14 +12,15 @@ import java.util.List;
  */
 
 public class ContactUtils {
+    private static final String SPACE = "\\s";
     public static List<String> getPhoneNumbers(Context context) {
         Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
         List<String> phoneNumbers = new ArrayList<String>();
 
         while (phones.moveToNext())
         {
-            //String name=phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            String rawPhoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            String phoneNumber = rawPhoneNumber.replaceAll(SPACE,"").replaceAll("\\+44","0");
             if (!phoneNumbers.contains(phoneNumber)) {
                 phoneNumbers.add(phoneNumber);
             }
