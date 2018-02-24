@@ -5,12 +5,15 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 
 import com.abstractx1.callwhitelist.ContactUtils;
 import com.abstractx1.callwhitelist.MainActivity;
+import com.abstractx1.callwhitelist.Manifest;
 import com.android.internal.telephony.ITelephony;
 
 import java.lang.reflect.Method;
@@ -46,11 +49,17 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                     List<String> phoneNumbers = ContactUtils.getPhoneNumbers(context);
 
                     if (!phoneNumbers.contains(incomingNumber)) {
-                        telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
-                        telephonyService.silenceRinger();
-                        telephonyService.endCall();
-                        MainActivity.log(String.format("endCall for incoming number: '%s'", incomingNumber));
-                        sendNotification(context, incomingNumber);
+                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLOCK_PHONE_CALLS) == PackageManager.PERMISSION_GRANTED) {
+                            // Permission is granted
+                            telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
+                            telephonyService.silenceRinger();
+                            telephonyService.endCall();
+                            MainActivity.log(String.format("endCall for incoming number: '%s'", incomingNumber));
+                            sendNotification(context, incomingNumber);
+                        }
+                        else {
+                            MainActivity.log(String.format("require permission com.abstractx1.callwhitelist.permission.BLOCK_PHONE_CALLS to block call"));
+                        }
                     }
                     else {
                         MainActivity.log(String.format("whitelisted contact for incoming number: '%s'", incomingNumber));

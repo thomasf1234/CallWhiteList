@@ -2,9 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.abstractx1.callwhitelist">
 
+    <permission android:name="com.abstractx1.callwhitelist.permission.BLOCK_PHONE_CALLS"
+        android:protectionLevel="dangerous" android:label="Block phone calls" />
+
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="com.abstractx1.callwhitelist.permission.BLOCK_PHONE_CALLS" />
 
     <application
         android:allowBackup="true"
