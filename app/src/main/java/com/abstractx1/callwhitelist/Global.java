@@ -13,7 +13,9 @@ import com.abstractx1.callwhitelist.activities.MainActivity;
 
 public class Global {
     public static final String USER_SETTINGS_KEY = "user_settings";
-    public static final String ENABLE_WHITELIST_KEY = "enable_whitelist";
+    public static final String ONLY_ALLOW_CONTACTS_KEY = "only_allow_contacts";
+    public static final String BLOCK_HIDDEN_NUMBERS_KEY = "block_hidden_numbers";
+    public static final String ENABLE_BLACKLIST_KEY = "enable_blacklist";
 
     public static boolean hasPermissionBlockPhoneCall(Context context) {
         boolean hasPermission = ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
@@ -22,11 +24,11 @@ public class Global {
         return hasPermission;
     }
 
-    public static boolean getEnableWhitelistToggle(Context context) {
+    public static boolean getToggle(Context context, String key) {
         SharedPreferences sharedpreferences = context.getSharedPreferences(USER_SETTINGS_KEY, Context.MODE_PRIVATE);
-        if (sharedpreferences.contains(ENABLE_WHITELIST_KEY))
+        if (sharedpreferences.contains(key))
         {
-            return sharedpreferences.getBoolean(ENABLE_WHITELIST_KEY, false);
+            return sharedpreferences.getBoolean(key, false);
         }
         else
         {
@@ -34,11 +36,11 @@ public class Global {
         }
     }
 
-    public static void setEnableWhitelistToggle(Context context, boolean value) {
+    public static void setToggle(Context context, String key, boolean value) {
         SharedPreferences sharedpreferences = context.getSharedPreferences(USER_SETTINGS_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
-        editor.putBoolean(ENABLE_WHITELIST_KEY, value);
-        MainActivity.log(String.format("Setting %s value to %s", ENABLE_WHITELIST_KEY, value));
+        editor.putBoolean(key, value);
+        MainActivity.log(String.format("Setting %s value to %s", key, value));
         editor.commit();
     }
 }

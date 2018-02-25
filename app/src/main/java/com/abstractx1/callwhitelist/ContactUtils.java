@@ -2,7 +2,12 @@ package com.abstractx1.callwhitelist;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.ContactsContract;
+import android.support.annotation.RequiresApi;
+import android.telephony.PhoneNumberUtils;
+
+import com.abstractx1.callwhitelist.models.Contact;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,21 +17,21 @@ import java.util.List;
  */
 
 public class ContactUtils {
-    private static final String SPACE = "\\s";
-    public static List<String> getPhoneNumbers(Context context) {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public static List<Contact> getContacts(Context context) {
         Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
-        List<String> phoneNumbers = new ArrayList<String>();
+        List<Contact> contacts = new ArrayList<Contact>();
 
         while (phones.moveToNext())
         {
+            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
             String rawPhoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-            String phoneNumber = rawPhoneNumber.replaceAll(SPACE,"").replaceAll("\\+44","0");
-            if (!phoneNumbers.contains(phoneNumber)) {
-                phoneNumbers.add(phoneNumber);
-            }
+            String phoneNumber = PhoneNumberUtils.normalizeNumber(rawPhoneNumber);
+            Contact contact = new Contact(name, phoneNumber);
+            contacts.add(contact);
         }
         phones.close();
 
-        return  phoneNumbers;
+        return contacts;
     }
 }

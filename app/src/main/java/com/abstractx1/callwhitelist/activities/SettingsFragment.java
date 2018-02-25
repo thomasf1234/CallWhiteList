@@ -25,14 +25,38 @@ public class SettingsFragment extends PreferenceFragment  {
 
         addPreferencesFromResource(R.xml.preferences);
 
-        SwitchPreference enableWhitelistPreference = (SwitchPreference) findPreference("enable_whitelist_preference");
-        enableWhitelistPreference.setChecked(Global.getEnableWhitelistToggle(getContext()));
-        enableWhitelistPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        SwitchPreference onlyAllowContactsPreference = (SwitchPreference) findPreference("only_allow_contacts_preference");
+        onlyAllowContactsPreference.setChecked(Global.getToggle(getContext(), Global.ONLY_ALLOW_CONTACTS_KEY));
+        onlyAllowContactsPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public boolean onPreferenceChange(Preference arg0, Object enabledObject) {
                 boolean enabled = (Boolean) enabledObject;
-                Global.setEnableWhitelistToggle(getContext(), enabled);
+                Global.setToggle(getContext(), Global.ONLY_ALLOW_CONTACTS_KEY, enabled);
+                return true;
+            }
+        });
+
+        SwitchPreference blockHiddenNumbersPreference = (SwitchPreference) findPreference("block_hidden_numbers_preference");
+        blockHiddenNumbersPreference.setChecked(Global.getToggle(getContext(), Global.BLOCK_HIDDEN_NUMBERS_KEY));
+        blockHiddenNumbersPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public boolean onPreferenceChange(Preference arg0, Object enabledObject) {
+                boolean enabled = (Boolean) enabledObject;
+                Global.setToggle(getContext(), Global.BLOCK_HIDDEN_NUMBERS_KEY, enabled);
+                return true;
+            }
+        });
+
+        SwitchPreference enableBlacklistPreference = (SwitchPreference) findPreference("enable_blacklist_preference");
+        enableBlacklistPreference.setChecked(Global.getToggle(getContext(), Global.ENABLE_BLACKLIST_KEY));
+        enableBlacklistPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public boolean onPreferenceChange(Preference arg0, Object enabledObject) {
+                boolean enabled = (Boolean) enabledObject;
+                Global.setToggle(getContext(), Global.ENABLE_BLACKLIST_KEY, enabled);
                 return true;
             }
         });
