@@ -16,6 +16,7 @@ public class Global {
     public static final String ONLY_ALLOW_CONTACTS_KEY = "only_allow_contacts";
     public static final String BLOCK_HIDDEN_NUMBERS_KEY = "block_hidden_numbers";
     public static final String ENABLE_BLACKLIST_KEY = "enable_blacklist";
+    public static final String SILENT_NOTIFICATIONS_KEY = "silent_notifications";
 
     public static boolean hasPermissionBlockPhoneCall(Context context) {
         boolean hasPermission = ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&

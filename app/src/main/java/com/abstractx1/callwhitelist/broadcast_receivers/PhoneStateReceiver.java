@@ -160,10 +160,16 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                         .setSmallIcon(android.R.drawable.ic_menu_call)
                         .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher_round))
                         .setContentTitle("CallWhiteList")
-                        .setContentText(message)
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setPriority(NotificationCompat.PRIORITY_MAX);
+                        .setContentText(message);
 
+        if (Global.getToggle(context, Global.SILENT_NOTIFICATIONS_KEY)) {
+            SLogger.getInstance().logDebug(context, String.format("Silencing notification"));
+            builder.setDefaults(Notification.DEFAULT_LIGHTS);
+        } else {
+            builder.setDefaults(Notification.DEFAULT_ALL);
+        }
+
+        builder.setPriority(NotificationCompat.PRIORITY_MAX);
         // Add as notification
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(NOTIFICATION_ID, builder.build());

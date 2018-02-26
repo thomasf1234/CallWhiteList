@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Call Blocking">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="only_allow_contacts_preference"
+            android:title="Only allow contacts"
+            android:summary="Blocks hidden numbers and non-contacts"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="block_hidden_numbers_preference"
+            android:title="Block hidden numbers"/>
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="enable_blacklist_preference"
+            android:title="Enable blacklist"
+            android:summary="Blocks visible incoming calls matching a blacklist entry in your contacts. Examples are \n Block 07* \n Zap 123456d"/>
+    </PreferenceCategory>
 
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="only_allow_contacts_preference"
-        android:title="Only allow contacts" />
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="block_hidden_numbers_preference"
-        android:title="Block hidden numbers" />
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="enable_blacklist_preference"
-        android:title="Enable blacklist" />
+    <PreferenceCategory
+        android:title="Notifications">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="silent_notifications_preference"
+            android:title="Silent notifications"
+            android:summary="Silent notifications from this app"/>
+    </PreferenceCategory>
+
 </PreferenceScreen>

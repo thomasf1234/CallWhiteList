@@ -58,5 +58,17 @@ public class SettingsFragment extends PreferenceFragment  {
                 return true;
             }
         });
+
+        SwitchPreference silentNotificationsPreference = (SwitchPreference) findPreference("silent_notifications_preference");
+        silentNotificationsPreference.setChecked(Global.getToggle(getActivity().getApplicationContext(), Global.SILENT_NOTIFICATIONS_KEY));
+        silentNotificationsPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public boolean onPreferenceChange(Preference arg0, Object enabledObject) {
+                boolean enabled = (Boolean) enabledObject;
+                Global.setToggle(getActivity().getApplicationContext(), Global.SILENT_NOTIFICATIONS_KEY, enabled);
+                return true;
+            }
+        });
     }
 }
