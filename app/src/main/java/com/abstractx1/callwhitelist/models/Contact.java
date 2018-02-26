@@ -1,5 +1,7 @@
 package com.abstractx1.callwhitelist.models;
 
+import com.abstractx1.callwhitelist.ContactUtils;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +33,7 @@ public class Contact {
     }
 
     public boolean isBlacklistEntry() {
-        Pattern pattern = Pattern.compile("^ *([zZ][Aa][Pp])|([bB][Ll][Oo][Cc][Kk])");
+        Pattern pattern = Pattern.compile("^ *([Zz][Aa][Pp])|([Bb][Ll][Oo][Cc][Kk])");
         Matcher matcher = pattern.matcher(name);
         if (matcher.find( )) {
             return true;
@@ -44,7 +46,7 @@ public class Contact {
 
     public Pattern blackListPattern() {
         if (isBlacklistEntry()) {
-            String blacklistEntry = name.substring(name.lastIndexOf(" ")+1);
+            String blacklistEntry = ContactUtils.replace44(name.substring(name.lastIndexOf(" ")+1));
             String blacklistRegex = blacklistEntry.replace("*",".*").replace("d","\\d");
             Pattern pattern = Pattern.compile(blacklistRegex);
             return pattern;

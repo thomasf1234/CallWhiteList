@@ -7,17 +7,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 
 import com.abstractx1.callwhitelist.ContactUtils;
 import com.abstractx1.callwhitelist.Global;
-import com.abstractx1.callwhitelist.activities.MainActivity;
 import com.abstractx1.callwhitelist.R;
 import com.abstractx1.callwhitelist.models.Contact;
+import com.abstractx1.callwhitelist.singletons.SLogger;
 import com.android.internal.telephony.ITelephony;
 
 import java.lang.reflect.Method;
@@ -56,23 +54,25 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                         ITelephony telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
                         Bundle _bundle = intent.getExtras();
                         String incomingNumber = _bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                        MainActivity.log(String.format("Incoming number: %s", incomingNumber));
+                        SLogger.getInstance().logDebug(context, String.format("Incoming number: %s", incomingNumber));
 
                         if (incomingNumber == null || incomingNumber.length() == 0) {
-                            MainActivity.log("Incoming number is a hidden number");
+                            SLogger.getInstance().logDebug(context, "Incoming number is a hidden number");
                             if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY) || Global.getToggle(context, Global.BLOCK_HIDDEN_NUMBERS_KEY)) {
-                                MainActivity.log("Blocking hidden number");
+                                SLogger.getInstance().logDebug(context, "Blocking hidden number");
                             } else
                             {
                                 blockCall = false;
                             }
                         } else {
-                            MainActivity.log("Incoming number is not a hidden number");
-                            MainActivity.log("Reading contacts");
+                            SLogger.getInstance().logDebug(context,"Incoming number is not a hidden number");
+                            incomingNumber = ContactUtils.replace44(incomingNumber);
+
+                            SLogger.getInstance().logDebug(context,"Reading contacts");
                             List<Contact> contacts = ContactUtils.getContacts(context);
 
                             for (Contact contact : contacts) {
-                                MainActivity.log(String.format("Found contact name '%s' numbers '%s'", contact.getName(), contact.getPhoneNumbers()));
+                                SLogger.getInstance().logDebug(context, String.format("Found contact name '%s' numbers '%s'", contact.getName(), contact.getPhoneNumbers()));
                             }
 
                             if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY))
@@ -80,8 +80,8 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                                 for (Contact contact : contacts) {
                                     if (!contact.isBlacklistEntry() && contact.hasPhoneNumber()) {
                                         for (String phoneNumber : contact.getPhoneNumbers()) {
-                                            MainActivity.log(String.format("Checking contact name '%s' number '%s'", contact.getName(), phoneNumber));
-                                            if (incomingNumber.equals(phoneNumber)) {
+                                            SLogger.getInstance().logDebug(context, String.format("Checking contact name '%s' number '%s'", contact.getName(), phoneNumber));
+                                            if (incomingNumber.equals(ContactUtils.replace44(phoneNumber))) {
                                                 blockCall = false;
                                                 break;
                                             }
@@ -96,10 +96,10 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                                 for (Contact contact : contacts) {
                                     if (contact.isBlacklistEntry()) {
                                         Pattern blacklistPattern = contact.blackListPattern();
-                                        MainActivity.log(String.format("Checking blacklist entry '%s'", blacklistPattern.toString()));
+                                        SLogger.getInstance().logDebug(context, String.format("Checking blacklist entry '%s'", blacklistPattern.toString()));
                                         Matcher matcher = blacklistPattern.matcher(incomingNumber);
                                         if (matcher.find( )) {
-                                            MainActivity.log(String.format("Entry is a match for %s, blocking call", blacklistPattern.toString()));
+                                            SLogger.getInstance().logDebug(context, String.format("Entry is a match for %s, blocking call", blacklistPattern.toString()));
                                             isBlacklisted = true;
                                             break;
                                         }
@@ -107,12 +107,12 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                                 }
 
                                 if (!isBlacklisted) {
-                                    MainActivity.log("No matching blacklist entry so allowing call");
+                                    SLogger.getInstance().logDebug(context, "No matching blacklist entry so allowing call");
                                     blockCall = false;
                                 }
                             }
                             else {
-                                MainActivity.log("No toggles enabled so allowing call");
+                                SLogger.getInstance().logDebug(context, "No toggles enabled so allowing call");
                                 blockCall = false;
                             }
                         }
@@ -122,15 +122,15 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                             telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
                             telephonyService.silenceRinger();
                             telephonyService.endCall();
-                            MainActivity.log(String.format("endCall for incoming number: '%s'", incomingNumber));
+                            SLogger.getInstance().logDebug(context, String.format("endCall for incoming number: '%s'", incomingNumber));
                             sendNotification(context, incomingNumber);
                         }
                     } else {
-                        MainActivity.log(String.format("require permissions to continue"));
+                        SLogger.getInstance().logDebug(context, String.format("require permissions to continue"));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    MainActivity.log("Exception object: " + e);
+                    SLogger.getInstance().logDebug(context, "Exception object: " + e);
                 }
             }
         }

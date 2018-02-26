@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.v4.content.ContextCompat;
 
-import com.abstractx1.callwhitelist.activities.MainActivity;
+import com.abstractx1.callwhitelist.singletons.SLogger;
 
 /**
  * Created by tfisher on 24/02/2018.
@@ -40,8 +40,13 @@ public class Global {
         SharedPreferences sharedpreferences = context.getSharedPreferences(USER_SETTINGS_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putBoolean(key, value);
-        MainActivity.log(String.format("Setting %s value to %s", key, value));
+        SLogger.getInstance().logDebug(context, String.format("Setting %s value to %s", key, value));
         editor.commit();
+    }
+
+
+    public static boolean isInDebugMode(Context context) {
+        return context.getResources().getBoolean(R.bool.debug_mode);
     }
 }
 

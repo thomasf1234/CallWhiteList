@@ -50,4 +50,8 @@ public class ContactUtils {
 
         return phoneNumbers;
     }
+
+    public static String replace44(String phoneNumber) {
+        return phoneNumber.replace("+44", "0");
+    }
 }
