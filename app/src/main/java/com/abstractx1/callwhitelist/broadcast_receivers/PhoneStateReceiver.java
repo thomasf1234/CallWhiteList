@@ -138,13 +138,21 @@ public class PhoneStateReceiver extends BroadcastReceiver {
         Resources resources = context.getResources();
         Date now = new Date();
         String nowString = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format(now);
+        String message;
+
+        if (blockedPhoneNumber == null || blockedPhoneNumber.length() == 0) {
+            message = String.format("Blocked call number witheld at %s", nowString);
+        } else
+        {
+            message = String.format("Blocked call %s at %s", blockedPhoneNumber, nowString);
+        }
 
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(context, "CHANNEL_ID")
                         .setSmallIcon(android.R.drawable.ic_menu_call)
                         .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher_round))
                         .setContentTitle("CallWhiteList")
-                        .setContentText(String.format("Blocked call %s at %s", blockedPhoneNumber, nowString))
+                        .setContentText(message)
                         .setDefaults(Notification.DEFAULT_ALL)
                         .setPriority(NotificationCompat.PRIORITY_MAX);
 

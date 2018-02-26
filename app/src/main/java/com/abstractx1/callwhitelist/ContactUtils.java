@@ -17,7 +17,6 @@ import java.util.List;
  */
 
 public class ContactUtils {
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static List<Contact> getContacts(Context context) {
         Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
         List<Contact> contacts = new ArrayList<Contact>();
