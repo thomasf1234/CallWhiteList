@@ -23,7 +23,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void log(String message) {
-        Log.v(getLogKey(), message);
+        if (isInDebugMode()) {
+            Log.v(getLogKey(), message);
+        }
+    }
+
+    public static boolean isInDebugMode() {
+        return false;
     }
 
     public static String getLogKey() {

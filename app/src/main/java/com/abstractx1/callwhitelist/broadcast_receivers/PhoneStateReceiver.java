@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 public class PhoneStateReceiver extends BroadcastReceiver {
     private static final int NOTIFICATION_ID = 0;
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onReceive(Context context, Intent intent) {
         // TODO: This method is called when the BroadcastReceiver is receiving
@@ -73,17 +72,19 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                             List<Contact> contacts = ContactUtils.getContacts(context);
 
                             for (Contact contact : contacts) {
-                                MainActivity.log(String.format("Found contact name '%s' number '%s'", contact.getName(), contact.getPhoneNumber()));
+                                MainActivity.log(String.format("Found contact name '%s' numbers '%s'", contact.getName(), contact.getPhoneNumbers()));
                             }
 
                             if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY))
                             {
                                 for (Contact contact : contacts) {
-                                    if (!contact.isBlacklistEntry()) {
-                                        MainActivity.log(String.format("Checking contact name '%s' number '%s'", contact.getName(), contact.getPhoneNumber()));
-                                        if (incomingNumber.equals(contact.getPhoneNumber())) {
-                                            blockCall = false;
-                                            break;
+                                    if (!contact.isBlacklistEntry() && contact.hasPhoneNumber()) {
+                                        for (String phoneNumber : contact.getPhoneNumbers()) {
+                                            MainActivity.log(String.format("Checking contact name '%s' number '%s'", contact.getName(), phoneNumber));
+                                            if (incomingNumber.equals(phoneNumber)) {
+                                                blockCall = false;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -98,12 +99,15 @@ public class PhoneStateReceiver extends BroadcastReceiver {
                                         MainActivity.log(String.format("Checking blacklist entry '%s'", blacklistPattern.toString()));
                                         Matcher matcher = blacklistPattern.matcher(incomingNumber);
                                         if (matcher.find( )) {
+                                            MainActivity.log(String.format("Entry is a match for %s, blocking call", blacklistPattern.toString()));
                                             isBlacklisted = true;
+                                            break;
                                         }
                                     }
                                 }
 
                                 if (!isBlacklisted) {
+                                    MainActivity.log("No matching blacklist entry so allowing call");
                                     blockCall = false;
                                 }
                             }

@@ -18,19 +18,36 @@ import java.util.List;
 
 public class ContactUtils {
     public static List<Contact> getContacts(Context context) {
-        Cursor phones = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,null,null, null);
+        Cursor contactsCursor = context.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null,null,null, null);
         List<Contact> contacts = new ArrayList<Contact>();
 
-        while (phones.moveToNext())
+        while (contactsCursor.moveToNext())
         {
-            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            String rawPhoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-            String phoneNumber = PhoneNumberUtils.normalizeNumber(rawPhoneNumber);
-            Contact contact = new Contact(name, phoneNumber);
+            String id = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts._ID));
+            String name = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+            List<String> phoneNumbers = getPhoneNumbers(context, id);
+
+            Contact contact = new Contact(name, phoneNumbers);
             contacts.add(contact);
         }
-        phones.close();
+        contactsCursor.close();
 
         return contacts;
+    }
+
+    public static List<String> getPhoneNumbers(Context context, String contactId) {
+        Cursor phonesCursor = context.getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + contactId,null, null);
+        List<String> phoneNumbers = new ArrayList<String>();
+
+        while (phonesCursor.moveToNext())
+        {
+
+            String rawPhoneNumber = phonesCursor.getString(phonesCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            String phoneNumber = PhoneNumberUtils.normalizeNumber(rawPhoneNumber);
+            phoneNumbers.add(phoneNumber);
+        }
+        phonesCursor.close();
+
+        return phoneNumbers;
     }
 }

@@ -1,5 +1,6 @@
 package com.abstractx1.callwhitelist.models;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,20 +10,24 @@ import java.util.regex.Pattern;
 
 public class Contact {
     private String name;
-    private String phoneNumber;
+    private List<String> phoneNumbers;
 
 
-    public Contact(String name, String phoneNumber) {
+    public Contact(String name, List<String> phoneNumbers) {
         this.name = name;
-        this.phoneNumber = phoneNumber;
+        this.phoneNumbers = phoneNumbers;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public boolean hasPhoneNumber() {
+        return !phoneNumbers.isEmpty();
+    }
+
+    public List<String> getPhoneNumbers() {
+        return phoneNumbers;
     }
 
     public boolean isBlacklistEntry() {
