@@ -1,6 +1,6 @@
 package com.abstractx1.callwhitelist.models;
 
-import com.abstractx1.callwhitelist.ContactUtils;
+import com.abstractx1.callwhitelist.utils.ContactUtils;
 
 import java.util.List;
 import java.util.regex.Matcher;

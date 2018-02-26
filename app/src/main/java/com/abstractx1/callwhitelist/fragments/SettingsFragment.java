@@ -1,4 +1,4 @@
-package com.abstractx1.callwhitelist.activities;
+package com.abstractx1.callwhitelist.fragments;
 
 
 import android.app.Fragment;

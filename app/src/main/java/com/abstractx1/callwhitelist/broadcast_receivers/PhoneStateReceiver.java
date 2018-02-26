@@ -11,7 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.TelephonyManager;
 
-import com.abstractx1.callwhitelist.ContactUtils;
+import com.abstractx1.callwhitelist.utils.ContactUtils;
 import com.abstractx1.callwhitelist.Global;
 import com.abstractx1.callwhitelist.R;
 import com.abstractx1.callwhitelist.models.Contact;
@@ -33,104 +33,108 @@ public class PhoneStateReceiver extends BroadcastReceiver {
         // TODO: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
 
-        String intentAction = intent.getAction();
-        if (intentAction.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)) {
+        if (intent.getAction().equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED))
+        {
             Bundle bundle = intent.getExtras();
 
             if (bundle != null) {
-                try {
+                String extraState = bundle.getString(TelephonyManager.EXTRA_STATE);
+                
+                if (extraState != null &&
+                        (extraState.equals(TelephonyManager.EXTRA_STATE_RINGING) || extraState.equals(TelephonyManager.EXTRA_STATE_OFFHOOK))) {
+                    try {
 
-                    if (Global.hasPermissionBlockPhoneCall(context)) {
-                        // Permission is granted
+                        if (Global.hasPermissionBlockPhoneCall(context)) {
+                            // Permission is granted
 
-                        boolean blockCall = true;
+                            boolean blockCall = true;
 
-                        // Java reflection to gain access to TelephonyManager's
-                        // ITelephony getter
-                        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-                        Class telephonyManagerClass = Class.forName(telephonyManager.getClass().getName());
-                        Method getITelephonyMethod = telephonyManagerClass.getDeclaredMethod("getITelephony");
-                        getITelephonyMethod.setAccessible(true);
-                        ITelephony telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
-                        Bundle _bundle = intent.getExtras();
-                        String incomingNumber = _bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
-                        SLogger.getInstance().logDebug(context, String.format("Incoming number: %s", incomingNumber));
+                            // Java reflection to gain access to TelephonyManager's
+                            // ITelephony getter
+                            TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+                            Class telephonyManagerClass = Class.forName(telephonyManager.getClass().getName());
+                            Method getITelephonyMethod = telephonyManagerClass.getDeclaredMethod("getITelephony");
+                            getITelephonyMethod.setAccessible(true);
+                            ITelephony telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
+                            String incomingNumber = bundle.getString(TelephonyManager.EXTRA_INCOMING_NUMBER);
+                            SLogger.getInstance().logDebug(context, String.format("Incoming number: %s", incomingNumber));
 
-                        if (incomingNumber == null || incomingNumber.length() == 0) {
-                            SLogger.getInstance().logDebug(context, "Incoming number is a hidden number");
-                            if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY) || Global.getToggle(context, Global.BLOCK_HIDDEN_NUMBERS_KEY)) {
-                                SLogger.getInstance().logDebug(context, "Blocking hidden number");
-                            } else
-                            {
-                                blockCall = false;
-                            }
-                        } else {
-                            SLogger.getInstance().logDebug(context,"Incoming number is not a hidden number");
-                            incomingNumber = ContactUtils.replace44(incomingNumber);
+                            if (incomingNumber == null || incomingNumber.length() == 0) {
+                                SLogger.getInstance().logDebug(context, "Incoming number is a hidden number");
+                                if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY) || Global.getToggle(context, Global.BLOCK_HIDDEN_NUMBERS_KEY)) {
+                                    SLogger.getInstance().logDebug(context, "Blocking hidden number");
+                                } else
+                                {
+                                    blockCall = false;
+                                }
+                            } else {
+                                SLogger.getInstance().logDebug(context,"Incoming number is not a hidden number");
+                                incomingNumber = ContactUtils.replace44(incomingNumber);
 
-                            SLogger.getInstance().logDebug(context,"Reading contacts");
-                            List<Contact> contacts = ContactUtils.getContacts(context);
+                                SLogger.getInstance().logDebug(context,"Reading contacts");
+                                List<Contact> contacts = ContactUtils.getContacts(context);
 
-                            for (Contact contact : contacts) {
-                                SLogger.getInstance().logDebug(context, String.format("Found contact name '%s' numbers '%s'", contact.getName(), contact.getPhoneNumbers()));
-                            }
-
-                            if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY))
-                            {
                                 for (Contact contact : contacts) {
-                                    if (!contact.isBlacklistEntry() && contact.hasPhoneNumber()) {
-                                        for (String phoneNumber : contact.getPhoneNumbers()) {
-                                            SLogger.getInstance().logDebug(context, String.format("Checking contact name '%s' number '%s'", contact.getName(), phoneNumber));
-                                            if (incomingNumber.equals(ContactUtils.replace44(phoneNumber))) {
-                                                blockCall = false;
-                                                break;
+                                    SLogger.getInstance().logDebug(context, String.format("Found contact name '%s' numbers '%s'", contact.getName(), contact.getPhoneNumbers()));
+                                }
+
+                                if (Global.getToggle(context, Global.ONLY_ALLOW_CONTACTS_KEY))
+                                {
+                                    for (Contact contact : contacts) {
+                                        if (!contact.isBlacklistEntry() && contact.hasPhoneNumber()) {
+                                            for (String phoneNumber : contact.getPhoneNumbers()) {
+                                                SLogger.getInstance().logDebug(context, String.format("Checking contact name '%s' number '%s'", contact.getName(), phoneNumber));
+                                                if (incomingNumber.equals(ContactUtils.replace44(phoneNumber))) {
+                                                    blockCall = false;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                            else if (Global.getToggle(context, Global.ENABLE_BLACKLIST_KEY))
-                            {
-                                boolean isBlacklisted = false;
+                                else if (Global.getToggle(context, Global.ENABLE_BLACKLIST_KEY))
+                                {
+                                    boolean isBlacklisted = false;
 
-                                for (Contact contact : contacts) {
-                                    if (contact.isBlacklistEntry()) {
-                                        Pattern blacklistPattern = contact.blackListPattern();
-                                        SLogger.getInstance().logDebug(context, String.format("Checking blacklist entry '%s'", blacklistPattern.toString()));
-                                        Matcher matcher = blacklistPattern.matcher(incomingNumber);
-                                        if (matcher.find( )) {
-                                            SLogger.getInstance().logDebug(context, String.format("Entry is a match for %s, blocking call", blacklistPattern.toString()));
-                                            isBlacklisted = true;
-                                            break;
+                                    for (Contact contact : contacts) {
+                                        if (contact.isBlacklistEntry()) {
+                                            Pattern blacklistPattern = contact.blackListPattern();
+                                            SLogger.getInstance().logDebug(context, String.format("Checking blacklist entry '%s'", blacklistPattern.toString()));
+                                            Matcher matcher = blacklistPattern.matcher(incomingNumber);
+                                            if (matcher.find( )) {
+                                                SLogger.getInstance().logDebug(context, String.format("Entry is a match for %s, blocking call", blacklistPattern.toString()));
+                                                isBlacklisted = true;
+                                                break;
+                                            }
                                         }
                                     }
-                                }
 
-                                if (!isBlacklisted) {
-                                    SLogger.getInstance().logDebug(context, "No matching blacklist entry so allowing call");
+                                    if (!isBlacklisted) {
+                                        SLogger.getInstance().logDebug(context, "No matching blacklist entry so allowing call");
+                                        blockCall = false;
+                                    }
+                                }
+                                else {
+                                    SLogger.getInstance().logDebug(context, "No toggles enabled so allowing call");
                                     blockCall = false;
                                 }
                             }
-                            else {
-                                SLogger.getInstance().logDebug(context, "No toggles enabled so allowing call");
-                                blockCall = false;
+
+
+                            if (blockCall == true) {
+                                telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
+                                telephonyService.silenceRinger();
+                                telephonyService.endCall();
+                                SLogger.getInstance().logDebug(context, String.format("endCall for incoming number: '%s'", incomingNumber));
+                                sendNotification(context, incomingNumber);
                             }
+                        } else {
+                            SLogger.getInstance().logDebug(context, String.format("require permissions to continue"));
                         }
-
-
-                        if (blockCall == true) {
-                            telephonyService = (ITelephony) getITelephonyMethod.invoke(telephonyManager);
-                            telephonyService.silenceRinger();
-                            telephonyService.endCall();
-                            SLogger.getInstance().logDebug(context, String.format("endCall for incoming number: '%s'", incomingNumber));
-                            sendNotification(context, incomingNumber);
-                        }
-                    } else {
-                        SLogger.getInstance().logDebug(context, String.format("require permissions to continue"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        SLogger.getInstance().logDebug(context, "Exception object: " + e);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    SLogger.getInstance().logDebug(context, "Exception object: " + e);
                 }
             }
         }

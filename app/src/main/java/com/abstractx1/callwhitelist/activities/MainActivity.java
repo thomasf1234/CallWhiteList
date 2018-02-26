@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.abstractx1.callwhitelist.R;
+import com.abstractx1.callwhitelist.fragments.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity {
 
